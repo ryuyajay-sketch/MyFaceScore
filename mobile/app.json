@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "MyFaceScore",
+    "slug": "first-impression-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "firstimpressionai",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0e2a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.firstimpressionai.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take a photo for AI first impression analysis",
+        "NSPhotoLibraryUsageDescription": "Choose a photo for AI first impression analysis",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f0e2a",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.firstimpressionai.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a photo for AI first impression analysis",
+          "cameraPermission": "Take a photo for AI first impression analysis"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a5227e75-80d8-42e0-89e2-9c1f8c6c9473"
+      }
+    },
+    "owner": "jfcxted"
+  }
+}

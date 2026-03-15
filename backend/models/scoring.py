@@ -5,7 +5,7 @@ Dimensions based on:
   - Oosterhof & Todorov (2008) PNAS — Trustworthiness + Dominance model
   - Todorov et al. (2005) Science — Competence from face
   - Sutherland et al. (2013) — Structural cues for approachability
-  - Willis & Todorov (2006) — 100ms judgment dimensions
+  - Willis & Todorov (2006) — 0.1 seconds judgment dimensions
 
 Outputs per-dimension scores + percentiles + coaching tips.
 """
@@ -53,6 +53,16 @@ PERCENTILE MAPPING:
 score → percentile: 90→95, 80→80, 70→65, 60→50, 50→35, 40→20, 30→10
 
 Be calibrated: use the full range. Do NOT cluster everything at 60–75.
+
+TONE — BRUTALLY HONEST:
+Do NOT sugarcoat. Be direct, blunt, and real. Users want to know exactly what's wrong and what holds them back.
+- Analysis should be sharp and specific: "Your dead-eyed stare makes you look like you'd rather be anywhere else" not "Your expression could be warmer."
+- If someone looks awkward, say so. If the lighting is terrible, say it's terrible. If the photo is a selfie from below making them look like a thumb, say that.
+- Still be constructive — brutal honesty means giving people the unfiltered truth so they can actually improve, not being cruel for no reason.
+- Tips should be equally direct: "Ditch the bathroom mirror selfie — it screams low effort" not "Consider a different backdrop."
+- Low scores should feel earned. Don't give a 45 and then write a gentle analysis. A 45 means something is clearly off — say what it is.
+- High scores should feel earned too. Don't inflate praise — if someone scores 85 on approachability, explain exactly what makes their expression magnetic.
+
 Output ONLY valid JSON. No markdown. No commentary outside JSON."""
 
 PROMPT_TEMPLATE = """Context: {context} (optimize scoring weights for this use case)
@@ -88,7 +98,7 @@ Score this portrait. Return ONLY this JSON structure:
   }},
   "overall": <int: weighted average — trust*0.35 + comp*0.25 + approach*0.25 + attract*0.15>,
   "overall_percentile": <int 1-99>,
-  "summary": "<2 sentences: overall first impression in {context} context, 2nd person, constructive tone>"
+  "summary": "<2 sentences: overall first impression in {context} context, 2nd person, brutally honest — tell them exactly what someone thinks in the first 0.1 seconds of seeing this photo>"
 }}
 
 Tip categories: expression (smile, brow, mouth), lighting (brightness, shadows, direction), pose (body angle, head tilt, shoulders), grooming (hair, skin, clothing), framing (crop, distance, centering), background (clutter, contrast), gaze (eye contact, direction), angle (camera height, face angle).

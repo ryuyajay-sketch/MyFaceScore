@@ -1,28 +1,5 @@
-# Dependencies
 node_modules/
-venv/
-.venv/
-__pycache__/
-*.pyc
-
-# Environment
-.env
-.env.local
-.env*.local
-
-# Build
-.next/
-out/
+.expo/
 dist/
-build/
-
-# OS
+*.env
 .DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-*.log

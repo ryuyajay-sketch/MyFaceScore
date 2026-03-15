@@ -77,7 +77,7 @@ export default function Home() {
           variants={fadeUp} initial="hidden" animate="show" custom={2}
         >
           Upload a portrait. Get instant AI scores on the four dimensions that shape first impressions in{' '}
-          <strong className="text-slate-200">under 100ms</strong> — plus actionable tips to improve them.
+          <strong className="text-slate-200">under 0.1 seconds</strong> — plus actionable tips to improve them.
         </motion.p>
 
         <motion.div
