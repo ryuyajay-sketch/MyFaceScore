@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator, Alert, Animated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator, Alert, Animated, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -138,7 +138,7 @@ export default function ResultsScreen() {
       <View style={styles.nav}>
         <Pressable onPress={() => router.replace('/')}><Text style={styles.navBack}>← Home</Text></Pressable>
         <Pressable onPress={handleShare} disabled={sharing} style={styles.shareButton}>
-          <Text style={styles.shareText}>{sharing ? '...' : '📤 Share'}</Text>
+          <Text style={styles.shareText}>{sharing ? '...' : 'Share'}</Text>
         </Pressable>
       </View>
 
@@ -152,6 +152,12 @@ export default function ResultsScreen() {
         <FadeInView delay={150}>
           <GlassCard style={styles.overallCard}>
             <View ref={cardRef} collapsable={false} style={styles.overallInner}>
+              {data.image_url && (
+                <Image
+                  source={{ uri: `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}${data.image_url}` }}
+                  style={styles.resultPhoto}
+                />
+              )}
               <View style={styles.overallScoreRow}>
                 <Text style={styles.overallScore}>{data.overall}</Text>
                 <Text style={styles.overallMax}>/100</Text>
@@ -209,6 +215,7 @@ const styles = StyleSheet.create({
   headerSummary: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14, textAlign: 'center', lineHeight: 22, maxWidth: 320 },
   overallCard: { overflow: 'hidden' },
   overallInner: { padding: 24, alignItems: 'center', backgroundColor: colors.card, borderRadius: radius['2xl'] },
+  resultPhoto: { width: 100, height: 100, borderRadius: 50, marginBottom: 16, borderWidth: 2, borderColor: colors.border },
   overallScoreRow: { flexDirection: 'row', alignItems: 'baseline' },
   overallScore: { color: colors.indigo[400], fontFamily: fonts.bold, fontSize: 56 },
   overallMax: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 20, marginLeft: 4 },

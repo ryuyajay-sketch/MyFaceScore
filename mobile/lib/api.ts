@@ -1,7 +1,6 @@
 import type { Context } from './constants';
 
-// TODO: Update this to your production API URL
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://myfacescore-api-production.up.railway.app';
 
 export interface AnalyzeResponse {
   id: string;

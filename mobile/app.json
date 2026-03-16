@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.firstimpressionai.app",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "Take a photo for AI first impression analysis",
         "NSPhotoLibraryUsageDescription": "Choose a photo for AI first impression analysis",

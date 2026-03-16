@@ -20,6 +20,14 @@ async def upload_image(job_id: str, image_bytes: bytes, content_type: str = "ima
     return url
 
 
+async def upload_original_image(job_id: str, image_bytes: bytes) -> str:
+    """Store original (unprocessed) image in memory, return a local URL."""
+    path = f"{job_id}/original.jpg"
+    _images[path] = image_bytes
+    url = f"/images/{path}"
+    return url
+
+
 async def save_result(job_id: str, result: dict) -> None:
     """Save analysis result in memory."""
     existing = _results.get(job_id, {})

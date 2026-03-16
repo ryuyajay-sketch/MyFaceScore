@@ -14,6 +14,24 @@ export default function ProcessingScreen() {
   const [step, setStep] = useState('queued');
   const [failed, setFailed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fakeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const serverProgress = useRef(0);
+
+  // Smooth fake progress — gradually fills to ~95% so it never feels stuck
+  useEffect(() => {
+    fakeRef.current = setInterval(() => {
+      setProgress((prev) => {
+        // Never go past 95 on fake progress — leave room for real "done"
+        if (prev >= 95) return prev;
+        // Slow down as we get higher — fast at start, crawls near end
+        const speed = prev < 30 ? 3 : prev < 60 ? 1.5 : prev < 80 ? 0.7 : 0.3;
+        // Don't go below server progress
+        const next = Math.max(serverProgress.current, prev + speed);
+        return Math.min(95, next);
+      });
+    }, 500);
+    return () => { if (fakeRef.current) clearInterval(fakeRef.current); };
+  }, []);
 
   const outerRotation = useRef(new Animated.Value(0)).current;
   const innerRotation = useRef(new Animated.Value(0)).current;
@@ -51,9 +69,10 @@ export default function ProcessingScreen() {
       try {
         const result = await pollResults(id);
         if (cancelled) return;
-        if (result.progress != null) setProgress(result.progress);
+        if (result.progress != null) serverProgress.current = result.progress;
         if (result.step) setStep(result.step);
         if (result.status === 'ready') {
+          if (fakeRef.current) clearInterval(fakeRef.current);
           setProgress(100);
           setStep('finalizing');
           setTimeout(() => router.replace({ pathname: '/results/[id]', params: { id } }), 800);

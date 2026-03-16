@@ -1,11 +1,11 @@
 """POST /analyze — accept portrait + context, run async pipeline."""
-from __future__ import annotations
-
 import asyncio
 import logging
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from pydantic import BaseModel
 
 from config import get_settings
@@ -15,11 +15,13 @@ from utils.image_processing import FaceProcessingError, preprocess_image, to_byt
 settings = get_settings()
 if settings.storage_mode == "supabase":
     from utils.supabase_client import save_result, update_status, upload_image
+    upload_original_image = upload_image  # fallback: use same function
 else:
-    from utils.local_storage import save_result, update_status, upload_image
+    from utils.local_storage import save_result, update_status, upload_image, upload_original_image
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["analyze"])
+limiter = Limiter(key_func=get_remote_address)
 
 ALLOWED_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/heic", "image/heif", "image/webp"}
 
@@ -46,9 +48,10 @@ async def run_pipeline(job_id: str, raw_bytes: bytes, context: Context) -> None:
             await update_status(job_id, "processing", progress=25, step="enhancing")
             processed_bytes = await loop.run_in_executor(None, to_bytes, processed_bgr)
 
-            # Step 2 — upload pre-processed image to storage
+            # Step 2 — upload images to storage
             await update_status(job_id, "processing", progress=35, step="uploading")
-            image_url = await upload_image(job_id, processed_bytes)
+            await upload_image(job_id, processed_bytes)
+            image_url = await upload_original_image(job_id, raw_bytes)
 
             # Step 3 — AI scoring (longest step)
             await update_status(job_id, "processing", progress=45, step="scoring")
@@ -80,7 +83,9 @@ async def run_pipeline(job_id: str, raw_bytes: bytes, context: Context) -> None:
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
+@limiter.limit("5/minute")
 async def analyze(
+    request: Request,
     file: Annotated[UploadFile, File(description="Portrait photo (JPEG/PNG, max 10MB)")],
     context: Annotated[Context, Form(description="Scoring context: professional | dating | social")] = "professional",
 ):

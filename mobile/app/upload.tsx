@@ -9,6 +9,7 @@ import { GradientButton } from '../components/GradientButton';
 import { colors, fonts, radius } from '../lib/theme';
 import { CONTEXTS, Context } from '../lib/constants';
 import { analyzeImage } from '../lib/api';
+import { checkAccess, consumeAnalysis, getProStatus, getCredits, getRemainingFree } from '../lib/store';
 
 type UploadState = 'context' | 'idle' | 'preview' | 'uploading';
 
@@ -31,6 +32,25 @@ export default function UploadScreen() {
   const [context, setContext] = useState<Context | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusLabel, setStatusLabel] = useState('');
+
+  // Load account status
+  useEffect(() => {
+    (async () => {
+      const isPro = await getProStatus();
+      if (isPro) {
+        setStatusLabel('Pro');
+        return;
+      }
+      const credits = await getCredits();
+      if (credits > 0) {
+        setStatusLabel(`${credits} credit${credits !== 1 ? 's' : ''}`);
+        return;
+      }
+      const free = await getRemainingFree();
+      setStatusLabel(`${free} free scan${free !== 1 ? 's' : ''}`);
+    })();
+  }, [state]); // refresh when state changes (e.g. after analysis)
 
   const handleContextSelect = (c: Context) => { setContext(c); setState('idle'); };
 
@@ -44,7 +64,7 @@ export default function UploadScreen() {
         return;
       }
       const launcher = useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
-      const result = await launcher({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.9 });
+      const result = await launcher({ mediaTypes: ['images'], allowsEditing: false, quality: 0.9 });
       if (result.canceled) return;
       const asset = result.assets[0];
       const manipulated = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: 512 } }], { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG });
@@ -56,10 +76,22 @@ export default function UploadScreen() {
 
   const handleAnalyze = async () => {
     if (!imageUri || !context) return;
+
+    const { allowed, reason } = await checkAccess();
+    if (!allowed) {
+      if (reason === 'paywall') {
+        router.push('/paywall');
+      } else {
+        Alert.alert('Limit reached', 'You\'ve hit your analysis limit for this period. It\'ll reset soon!');
+      }
+      return;
+    }
+
     setState('uploading');
     setError(null);
     try {
       const { id } = await analyzeImage(imageUri, context);
+      await consumeAnalysis();
       router.push({ pathname: '/processing', params: { id } });
     } catch (err: any) {
       setError(err.message || 'Upload failed. Please try again.');
@@ -71,9 +103,14 @@ export default function UploadScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-      <Pressable onPress={() => state === 'context' ? router.back() : setState('context')} style={styles.backButton}>
-        <Text style={styles.backButtonText}>← Back</Text>
-      </Pressable>
+      <View style={styles.topBar}>
+        <Pressable onPress={() => state === 'context' ? router.back() : setState('context')}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push('/paywall')} style={styles.statusBadge}>
+          <Text style={styles.statusText}>{statusLabel}</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.content}>
         {state === 'context' && (
@@ -106,19 +143,16 @@ export default function UploadScreen() {
             </Pressable>
             <Text style={styles.title}>Upload your photo</Text>
             <Text style={styles.subtitle}>Clear, front-facing portrait · good lighting · one person</Text>
-            <GlassCard style={styles.uploadCard}>
-              <View style={styles.uploadIconWrap}><Text style={styles.uploadIconText}>+</Text></View>
-              <Text style={styles.uploadText}>Choose a photo to analyze</Text>
-              <Text style={styles.uploadHint}>JPEG or PNG · max 10MB</Text>
-              <View style={styles.uploadButtons}>
-                <Pressable onPress={() => pickImage(true)} style={styles.uploadOption}>
-                  <Text style={styles.uploadOptionText}>Camera</Text>
-                </Pressable>
-                <Pressable onPress={() => pickImage(false)} style={styles.uploadOption}>
-                  <Text style={styles.uploadOptionText}>Gallery</Text>
-                </Pressable>
-              </View>
-            </GlassCard>
+            <Pressable onPress={() => pickImage(false)}>
+              <GlassCard style={styles.uploadCard}>
+                <View style={styles.uploadIconWrap}><Text style={styles.uploadIconText}>+</Text></View>
+                <Text style={styles.uploadText}>Tap to choose a photo</Text>
+                <Text style={styles.uploadHint}>JPEG or PNG · max 10MB</Text>
+              </GlassCard>
+            </Pressable>
+            <Pressable onPress={() => pickImage(true)} style={styles.cameraLink}>
+              <Text style={styles.cameraLinkText}>Or take a photo</Text>
+            </Pressable>
           </FadeInView>
         )}
 
@@ -153,8 +187,10 @@ export default function UploadScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 20 },
-  backButton: { marginBottom: 16 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   backButtonText: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14 },
+  statusBadge: { backgroundColor: 'rgba(99,102,241,0.15)', borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 },
+  statusText: { color: colors.indigo[400], fontFamily: fonts.medium, fontSize: 12 },
   content: { flex: 1, justifyContent: 'center' },
   title: { color: colors.white, fontFamily: fonts.bold, fontSize: 24, textAlign: 'center', marginBottom: 8 },
   subtitle: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14, textAlign: 'center', marginBottom: 24 },
@@ -173,11 +209,10 @@ const styles = StyleSheet.create({
   uploadIconText: { color: colors.indigo[400], fontSize: 32, fontFamily: fonts.bold },
   uploadText: { color: colors.white, fontFamily: fonts.medium, fontSize: 16 },
   uploadHint: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 13 },
-  uploadButtons: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  uploadOption: { backgroundColor: 'rgba(30,27,75,0.5)', borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, paddingVertical: 12, paddingHorizontal: 24 },
-  uploadOptionText: { color: colors.slate[300], fontFamily: fonts.medium, fontSize: 14 },
+  cameraLink: { alignItems: 'center', paddingVertical: 14 },
+  cameraLinkText: { color: colors.slate[500], fontFamily: fonts.regular, fontSize: 14, textDecorationLine: 'underline' },
   previewCard: { overflow: 'hidden' },
-  previewImage: { width: '100%', aspectRatio: 1, borderRadius: radius['2xl'] - 1 },
+  previewImage: { width: '100%', height: 400, borderRadius: radius['2xl'] - 1, resizeMode: 'cover' as any },
   uploadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15,14,42,0.7)', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: radius['2xl'] },
   uploadingText: { color: colors.white, fontFamily: fonts.medium, fontSize: 14 },
   previewActions: { flexDirection: 'row', gap: 12, marginTop: 16 },

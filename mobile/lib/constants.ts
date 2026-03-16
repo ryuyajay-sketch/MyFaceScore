@@ -1,16 +1,16 @@
 export type Context = 'professional' | 'dating' | 'social';
 
 export const CONTEXTS = [
-  { id: 'professional' as Context, label: 'Professional', emoji: 'P', desc: 'LinkedIn, r\u00e9sum\u00e9, job applications' },
-  { id: 'dating' as Context, label: 'Dating', emoji: 'D', desc: 'Dating apps, social profiles' },
-  { id: 'social' as Context, label: 'Social', emoji: 'S', desc: 'Instagram, general social media' },
+  { id: 'professional' as Context, label: 'Professional', emoji: '\u25B2', desc: 'LinkedIn, r\u00e9sum\u00e9, job applications' },
+  { id: 'dating' as Context, label: 'Dating', emoji: '\u2665', desc: 'Dating apps, social profiles' },
+  { id: 'social' as Context, label: 'Social', emoji: '\u0040', desc: 'Instagram, general social media' },
 ] as const;
 
 export const DIMENSIONS = [
-  { label: 'Trustworthiness', value: 84, color: '#06b6d4', icon: 'T' },
-  { label: 'Competence',      value: 77, color: '#6366f1', icon: 'C' },
-  { label: 'Approachability', value: 91, color: '#22c55e', icon: 'A' },
-  { label: 'Attractiveness',  value: 73, color: '#a855f7', icon: 'X' },
+  { label: 'Trustworthiness', value: 82, color: '#06b6d4', icon: 'T', preview: 'Relaxed brow and soft eye contact — nothing guarded or tense here' },
+  { label: 'Competence',      value: 76, color: '#6366f1', icon: 'C', preview: 'Polished but expression leans warm over authoritative' },
+  { label: 'Approachability', value: 84, color: '#22c55e', icon: 'A', preview: 'That slight smirk creates a magnetic "easy to talk to" signal' },
+  { label: 'Attractiveness',  value: 86, color: '#a855f7', icon: 'X', preview: 'Strong symmetry, clear skin — sharp focus with no harsh shadows' },
 ] as const;
 
 export const DIMENSION_CONFIG = [

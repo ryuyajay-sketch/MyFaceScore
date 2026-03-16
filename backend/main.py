@@ -7,7 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from fastapi import Request
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from config import get_settings
 from routers import analyze, compare, results
@@ -25,12 +29,19 @@ async def lifespan(app: FastAPI):
 
 settings = get_settings()
 
+# Rate limiter: 5 per minute per IP on analyze endpoint
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="First Impression API",
     version="1.0.0",
     description="AI-powered facial first impression analysis",
     lifespan=lifespan,
 )
+
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)

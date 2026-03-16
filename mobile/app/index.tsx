@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Animated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Animated, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
@@ -36,25 +36,20 @@ function DemoBar({ dimension, index }: { dimension: typeof DIMENSIONS[number]; i
 
   return (
     <View style={styles.demoBarRow}>
-      <Text style={styles.demoBarIcon}>{dimension.icon}</Text>
       <View style={styles.demoBarContent}>
         <View style={styles.demoBarHeader}>
           <Text style={styles.demoBarLabel}>{dimension.label}</Text>
-          <Text style={styles.demoBarValue}>{dimension.value}</Text>
+          <Text style={[styles.demoBarValue, { color: dimension.color }]}>{dimension.value}</Text>
         </View>
         <View style={styles.demoBarTrack}>
           <Animated.View style={[styles.demoBarFill, { width: barWidth, backgroundColor: dimension.color }]} />
         </View>
+        <Text style={styles.demoBarPreview}>{dimension.preview}</Text>
       </View>
     </View>
   );
 }
 
-const FEATURES = [
-  { icon: '\u26A1', title: 'Instant AI Analysis', desc: 'Results in under 5 seconds using a vision model trained on Todorov-aligned perception research.' },
-  { icon: '\uD83D\uDCD6', title: 'Science-Backed Dimensions', desc: 'Scores on Trustworthiness, Competence, Approachability & Attractiveness.' },
-  { icon: '\uD83D\uDD12', title: 'Photo Deleted Instantly', desc: 'Your image is processed server-side and deleted immediately. Nothing is stored.' },
-];
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -74,47 +69,81 @@ export default function LandingScreen() {
       </FadeInView>
 
       <View style={styles.hero}>
-        <FadeInView delay={100}><Text style={styles.heroBadge}>Based on Todorov lab research</Text></FadeInView>
         <FadeInView delay={200}>
-          <Text style={styles.heroTitle}>How does your photo <Text style={styles.heroTitleGradient}>make people feel?</Text></Text>
+          <Text style={styles.heroTitle}>You have{'\n'}<Text style={styles.heroTitleGradient}>0.1 seconds.</Text></Text>
         </FadeInView>
         <FadeInView delay={300}>
-          <Text style={styles.heroSubtitle}>Upload a portrait. Get instant AI scores on the four dimensions that shape first impressions — plus actionable tips to improve them.</Text>
+          <Text style={styles.heroSubtitle}>That's how fast people judge your face. Find out what they're thinking — and what to fix.</Text>
         </FadeInView>
         <FadeInView delay={400} style={styles.heroCTA}>
-          <GradientButton title="Analyze My Photo  →" onPress={() => router.push('/upload')} />
+          <GradientButton title="Score my face" onPress={() => router.push('/upload')} />
         </FadeInView>
 
         <FadeInView delay={500}>
           <GlassCard style={styles.demoCard}>
-            <Text style={styles.demoLabel}>Sample result — Professional context</Text>
+            {/* Mock result preview */}
+            <View style={styles.mockResultTop}>
+              <Image source={require('../assets/sample-face.png')} style={styles.mockAvatar} />
+              <View style={styles.mockScoreSection}>
+                <Text style={styles.mockScore}>82</Text>
+                <Text style={styles.mockScoreLabel}>/100 · Top 25%</Text>
+              </View>
+            </View>
+            <Text style={styles.mockQuote}>"Your smile reads genuine but the overhead lighting is casting shadows under your eyes — makes you look 3 years older than you are. Tilt your chin down slightly and use natural window light. That alone would push you from an 82 to a 90+."</Text>
+            <View style={styles.mockDivider} />
             {DIMENSIONS.map((d, i) => <DemoBar key={d.label} dimension={d} index={i} />)}
-            <Text style={styles.demoDisclaimer}>Scores reflect how your photo may be perceived, not who you are.</Text>
           </GlassCard>
         </FadeInView>
       </View>
 
-      <View style={styles.features}>
-        {FEATURES.map((f, i) => (
-          <FadeInView key={f.title} delay={600 + i * 100}>
-            <GlassCard style={styles.featureCard}>
-              <View style={styles.featureIcon}><Text style={styles.featureIconText}>{f.icon}</Text></View>
-              <Text style={styles.featureTitle}>{f.title}</Text>
-              <Text style={styles.featureDesc}>{f.desc}</Text>
-            </GlassCard>
-          </FadeInView>
-        ))}
+      {/* How it works */}
+      <FadeInView delay={600}>
+        <Text style={styles.sectionTitle}>How it works</Text>
+      </FadeInView>
+      <View style={styles.steps}>
+        <FadeInView delay={650}>
+          <View style={styles.stepRow}>
+            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+            <Text style={styles.stepText}>Upload any selfie or headshot</Text>
+          </View>
+        </FadeInView>
+        <FadeInView delay={700}>
+          <View style={styles.stepRow}>
+            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+            <Text style={styles.stepText}>AI scores you on trust, competence, approachability & attractiveness</Text>
+          </View>
+        </FadeInView>
+        <FadeInView delay={750}>
+          <View style={styles.stepRow}>
+            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
+            <Text style={styles.stepText}>Get brutally honest feedback + tips to actually improve</Text>
+          </View>
+        </FadeInView>
       </View>
 
-      <FadeInView delay={900}>
-        <GlassCard style={styles.ctaCard}>
-          <Text style={styles.ctaTitle}>See your scores in seconds</Text>
-          <Text style={styles.ctaSubtitle}>Free · No account needed · Photo deleted immediately</Text>
-          <GradientButton title="Get My Score  →" onPress={() => router.push('/upload')} style={{ marginTop: 20 }} />
+      {/* Social proof / credibility */}
+      <FadeInView delay={800}>
+        <GlassCard style={styles.credCard}>
+          <Text style={styles.credQuote}>"People decide if they trust you before you even open your mouth."</Text>
+          <Text style={styles.credSource}>— Todorov et al., Princeton University</Text>
         </GlassCard>
       </FadeInView>
 
-      <Text style={styles.footer}>MyFaceScore · Scores reflect social perception, not character · Based on published social psychology research</Text>
+      {/* Features as quick bullets, not cards */}
+      <FadeInView delay={850}>
+        <View style={styles.bulletSection}>
+          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#818cf8' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Results in 5 seconds</Text></View>
+          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#22c55e' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Based on real perception science</Text></View>
+          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#06b6d4' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Your photo is deleted immediately</Text></View>
+          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#a855f7' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>No account needed</Text></View>
+        </View>
+      </FadeInView>
+
+      <FadeInView delay={900}>
+        <GradientButton title="Try it free" onPress={() => router.push('/upload')} style={{ marginTop: 8 }} />
+      </FadeInView>
+
+      <Text style={styles.footer}>2 free scans · no sign up · photo deleted after scoring</Text>
     </ScrollView>
   );
 }
@@ -127,15 +156,19 @@ const styles = StyleSheet.create({
   logoAccent: { color: colors.indigo[400] },
   navButton: { backgroundColor: colors.indigo[600], paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.sm },
   navButtonText: { color: colors.white, fontFamily: fonts.medium, fontSize: 14 },
-  hero: { alignItems: 'center', marginBottom: 40 },
-  heroBadge: { color: colors.indigo[300], fontFamily: fonts.regular, fontSize: 13, marginBottom: 16, textAlign: 'center' },
-  heroTitle: { color: colors.white, fontFamily: fonts.bold, fontSize: 36, textAlign: 'center', lineHeight: 44 },
+  hero: { alignItems: 'center', marginBottom: 32 },
+  heroTitle: { color: colors.white, fontFamily: fonts.bold, fontSize: 40, lineHeight: 48, textAlign: 'center' },
   heroTitleGradient: { color: colors.indigo[400] },
-  heroSubtitle: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 16, textAlign: 'center', lineHeight: 24, marginTop: 16, maxWidth: 340 },
-  heroCTA: { marginTop: 28, marginBottom: 32 },
-  demoCard: { padding: 20, width: '100%', gap: 12 },
-  demoLabel: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 },
-  demoDisclaimer: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 11, marginTop: 4 },
+  heroSubtitle: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 17, lineHeight: 26, marginTop: 12, textAlign: 'center' },
+  heroCTA: { marginTop: 24, marginBottom: 28 },
+  demoCard: { padding: 20, width: '100%', gap: 12, overflow: 'hidden' },
+  mockResultTop: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 4 },
+  mockAvatar: { width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: 'rgba(99,102,241,0.3)' },
+  mockScoreSection: { flex: 1 },
+  mockScore: { color: colors.white, fontFamily: fonts.bold, fontSize: 36 },
+  mockScoreLabel: { color: colors.slate[500], fontFamily: fonts.regular, fontSize: 13 },
+  mockQuote: { color: colors.slate[300], fontFamily: fonts.regular, fontSize: 13, lineHeight: 20, fontStyle: 'italic' },
+  mockDivider: { height: 1, backgroundColor: 'rgba(99,102,241,0.1)', marginVertical: 4 },
   demoBarRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   demoBarIcon: { fontSize: 16, width: 24, textAlign: 'center' },
   demoBarContent: { flex: 1 },
@@ -144,14 +177,19 @@ const styles = StyleSheet.create({
   demoBarValue: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 12 },
   demoBarTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden' },
   demoBarFill: { height: '100%', borderRadius: 3 },
-  features: { gap: 12, marginBottom: 32 },
-  featureCard: { padding: 20, gap: 8 },
-  featureIcon: { width: 36, height: 36, borderRadius: radius.sm, backgroundColor: 'rgba(30,27,75,0.5)', alignItems: 'center', justifyContent: 'center' },
-  featureIconText: { fontSize: 18 },
-  featureTitle: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 14 },
-  featureDesc: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 13, lineHeight: 20 },
-  ctaCard: { padding: 32, alignItems: 'center' },
-  ctaTitle: { color: colors.white, fontFamily: fonts.bold, fontSize: 22, textAlign: 'center' },
-  ctaSubtitle: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 13, textAlign: 'center', marginTop: 8 },
-  footer: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 11, textAlign: 'center', marginTop: 32, lineHeight: 18 },
+  demoBarPreview: { color: colors.slate[500], fontFamily: fonts.regular, fontSize: 11, lineHeight: 16, marginTop: 4 },
+  sectionTitle: { color: colors.white, fontFamily: fonts.bold, fontSize: 20, marginBottom: 16, textAlign: 'center' },
+  steps: { gap: 14, marginBottom: 28 },
+  stepRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  stepNumber: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.indigo[600], alignItems: 'center', justifyContent: 'center' },
+  stepNumberText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
+  stepText: { color: colors.slate[300], fontFamily: fonts.regular, fontSize: 15, flex: 1, lineHeight: 22 },
+  credCard: { padding: 24, marginBottom: 24 },
+  credQuote: { color: colors.slate[300], fontFamily: fonts.medium, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
+  credSource: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 12, marginTop: 10 },
+  bulletSection: { gap: 10, marginBottom: 20 },
+  bulletRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  bulletDot: { fontSize: 18, fontFamily: fonts.bold },
+  bulletText: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14 },
+  footer: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 11, textAlign: 'center', marginTop: 24, marginBottom: 8, lineHeight: 18 },
 });
