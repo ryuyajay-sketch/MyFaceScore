@@ -14,7 +14,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from config import get_settings
-from routers import analyze, compare, results
+from routers import analyze, chat, compare, results
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -55,6 +55,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(analyze.router)
+app.include_router(chat.router)
 app.include_router(compare.router)
 app.include_router(results.router)
 

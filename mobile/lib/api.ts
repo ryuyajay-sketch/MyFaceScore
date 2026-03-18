@@ -78,6 +78,23 @@ export async function pollResults(id: string): Promise<PollResponse> {
   return res.json();
 }
 
+export interface ChatResponse {
+  reply: string;
+}
+
+export async function chatWithAI(jobId: string, message: string): Promise<ChatResponse> {
+  const res = await fetch(`${BASE_URL}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ job_id: jobId, message }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Chat failed' }));
+    throw new Error(err.detail || `Chat failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function getResults(id: string): Promise<ResultsResponse> {
   const res = await fetch(`${BASE_URL}/results/${id}`);
   if (!res.ok) {

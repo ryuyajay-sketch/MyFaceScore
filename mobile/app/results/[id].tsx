@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator, Alert, Animated, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator, Alert, Animated, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -7,7 +7,7 @@ import * as Sharing from 'expo-sharing';
 import { GlassCard } from '../../components/GlassCard';
 import { colors, fonts, radius } from '../../lib/theme';
 import { DIMENSION_CONFIG, CONTEXT_LABELS, percentileLabel, type Context } from '../../lib/constants';
-import { getResults, BASE_URL, type ResultsResponse, type DimensionResult } from '../../lib/api';
+import { getResults, chatWithAI, BASE_URL, type ResultsResponse, type DimensionResult } from '../../lib/api';
 
 const CATEGORY_LABELS: Record<string, string> = {
   expression: 'Expression', lighting: 'Lighting', pose: 'Pose', grooming: 'Grooming',
@@ -100,12 +100,33 @@ export default function ResultsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
   const cardRef = useRef<View>(null);
 
   useEffect(() => {
     if (!id) return;
     getResults(id).then(setData).catch(e => setError(e.message)).finally(() => setLoading(false));
   }, [id]);
+
+  const handleChat = async () => {
+    const msg = chatInput.trim();
+    if (!msg || !id || chatLoading) return;
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setChatLoading(true);
+    try {
+      const { reply } = await chatWithAI(id, msg);
+      setChatMessages(prev => [...prev, { role: 'ai', text: reply }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'ai', text: 'Sorry, something went wrong. Try again.' }]);
+    } finally {
+      setChatLoading(false);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  };
 
   const handleShare = async () => {
     if (!cardRef.current) return;
@@ -134,7 +155,7 @@ export default function ResultsScreen() {
   );
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <KeyboardAvoidingView style={[styles.screen, { paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.nav}>
         <Pressable onPress={() => router.replace('/')}><Text style={styles.navBack}>← Home</Text></Pressable>
         <Pressable onPress={handleShare} disabled={sharing} style={styles.shareButton}>
@@ -142,7 +163,7 @@ export default function ResultsScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <FadeInView style={styles.header}>
           <Text style={styles.contextBadge}>Context: {CONTEXT_LABELS[data.context]}</Text>
           <Text style={styles.headerTitle}>Your First Impression</Text>
@@ -191,12 +212,46 @@ export default function ResultsScreen() {
           </GlassCard>
         </FadeInView>
 
+        <FadeInView delay={1100}>
+          <GlassCard style={styles.chatSection}>
+            <Text style={styles.chatTitle}>Ask the AI</Text>
+            <Text style={styles.chatSubtitle}>Get personalized tips about your photo</Text>
+
+            {chatMessages.map((msg, i) => (
+              <View key={i} style={msg.role === 'user' ? styles.chatBubbleUser : styles.chatBubbleAI}>
+                <Text style={msg.role === 'user' ? styles.chatTextUser : styles.chatTextAI}>{msg.text}</Text>
+              </View>
+            ))}
+            {chatLoading && (
+              <View style={styles.chatBubbleAI}>
+                <ActivityIndicator size="small" color={colors.indigo[400]} />
+              </View>
+            )}
+
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatInput}
+                placeholder="e.g. How can I look more approachable?"
+                placeholderTextColor={colors.textMuted}
+                value={chatInput}
+                onChangeText={setChatInput}
+                onSubmitEditing={handleChat}
+                returnKeyType="send"
+                editable={!chatLoading}
+              />
+              <Pressable style={[styles.chatSend, chatLoading && styles.disabled]} onPress={handleChat} disabled={chatLoading}>
+                <Text style={styles.chatSendText}>→</Text>
+              </Pressable>
+            </View>
+          </GlassCard>
+        </FadeInView>
+
         <Pressable onPress={() => router.push('/upload')} style={styles.tryAgain}>
           <Text style={styles.tryAgainText}>Try another photo</Text>
         </Pressable>
         <View style={{ height: insets.bottom + 20 }} />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -251,6 +306,18 @@ const styles = StyleSheet.create({
   errorCard: { padding: 32, alignItems: 'center', gap: 16, marginHorizontal: 20 },
   errorText: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14, textAlign: 'center' },
   errorLink: { color: colors.indigo[400], fontFamily: fonts.medium, fontSize: 14 },
+  chatSection: { padding: 20, gap: 12 },
+  chatTitle: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 16 },
+  chatSubtitle: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 13, marginTop: -4 },
+  chatBubbleUser: { alignSelf: 'flex-end', backgroundColor: colors.indigo[600], borderRadius: radius.lg, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10, maxWidth: '85%' },
+  chatBubbleAI: { alignSelf: 'flex-start', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)', borderRadius: radius.lg, borderBottomLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, maxWidth: '85%' },
+  chatTextUser: { color: colors.white, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
+  chatTextAI: { color: colors.slate[300], fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
+  chatInputRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  chatInput: { flex: 1, backgroundColor: 'rgba(22,20,58,0.6)', borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10, color: colors.white, fontFamily: fonts.regular, fontSize: 14 },
+  chatSend: { backgroundColor: colors.indigo[600], borderRadius: radius.md, width: 44, alignItems: 'center', justifyContent: 'center' },
+  chatSendText: { color: colors.white, fontFamily: fonts.bold, fontSize: 18 },
+  disabled: { opacity: 0.4 },
   tryAgain: { alignItems: 'center', paddingVertical: 8 },
   tryAgainText: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14 },
 });
