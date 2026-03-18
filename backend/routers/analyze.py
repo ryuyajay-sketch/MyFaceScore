@@ -32,7 +32,7 @@ class AnalyzeResponse(BaseModel):
     message: str
 
 
-async def run_pipeline(job_id: str, raw_bytes: bytes, context: Context) -> None:
+async def run_pipeline(job_id: str, raw_bytes: bytes, context: Context, purpose: str = "") -> None:
     """Background task: preprocess → score → persist."""
     loop = asyncio.get_event_loop()
     settings = get_settings()
@@ -55,7 +55,7 @@ async def run_pipeline(job_id: str, raw_bytes: bytes, context: Context) -> None:
 
             # Step 3 — AI scoring (longest step)
             await update_status(job_id, "processing", progress=45, step="scoring")
-            scoring = await score_face(processed_bytes, context)
+            scoring = await score_face(processed_bytes, context, purpose=purpose)
 
             # Step 4 — persist result
             await update_status(job_id, "processing", progress=90, step="finalizing")
@@ -88,6 +88,7 @@ async def analyze(
     request: Request,
     file: Annotated[UploadFile, File(description="Portrait photo (JPEG/PNG, max 10MB)")],
     context: Annotated[Context, Form(description="Scoring context: professional | dating | social")] = "professional",
+    purpose: Annotated[str, Form(description="Optional free-text purpose, e.g. 'How do others see me?'")] = "",
 ):
     settings = get_settings()
     max_bytes = settings.max_upload_size_mb * 1024 * 1024
@@ -103,6 +104,6 @@ async def analyze(
     job_id = generate(size=21)
     await update_status(job_id, "queued")
 
-    asyncio.create_task(run_pipeline(job_id, raw, context))
+    asyncio.create_task(run_pipeline(job_id, raw, context, purpose=purpose))
 
     return AnalyzeResponse(id=job_id, status="queued", message="Analysis started.")

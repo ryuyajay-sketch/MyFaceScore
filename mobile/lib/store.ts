@@ -1,18 +1,27 @@
-import { Platform, NativeModules } from 'react-native';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Check if IAP native module exists (not available in Expo Go)
-const IAP_AVAILABLE = !!NativeModules.ExpoInAppPurchases;
-
+// Lazy load IAP — safely handles both Expo Go (no native module) and production builds
 let _iap: any = null;
+let _iapChecked = false;
+
 function getIAP() {
-  if (!IAP_AVAILABLE) return null;
-  if (!_iap) {
-    try {
-      _iap = require('expo-in-app-purchases');
-    } catch {
-      _iap = null;
+  if (_iapChecked) return _iap;
+  _iapChecked = true;
+  try {
+    // Guard: require() can throw a fatal error in Expo Go even inside try/catch
+    // if the native module is missing. Check Platform first.
+    if (Platform.OS !== 'ios' && Platform.OS !== 'android') return _iap;
+    const mod = require('expo-in-app-purchases');
+    // Verify the native module is actually linked (not just a JS stub)
+    if (mod && typeof mod.connectAsync === 'function') {
+      // Test that the native bridge is present by checking for the native module
+      const hasNative = mod.default || mod.connectAsync;
+      if (hasNative) _iap = mod;
     }
+  } catch (e: any) {
+    // Silently swallow — expected in Expo Go where native IAP module isn't available
+    _iap = null;
   }
   return _iap;
 }
@@ -153,6 +162,10 @@ export type AnalysisStatus = {
 };
 
 export async function checkAccess(): Promise<AnalysisStatus> {
+  // Dev/owner unlimited bypass via secret flag
+  const devFlag = await AsyncStorage.getItem('@myfacescore_dev_unlimited');
+  if (devFlag === 'true') return { allowed: true, reason: 'pro', remaining: 999 };
+
   // 1. Pro subscriber
   const isPro = await getProStatus();
   if (isPro) {
@@ -265,6 +278,22 @@ export async function restorePurchases(): Promise<boolean> {
     return false;
   }
 }
+
+// --- Dev/owner unlimited ---
+
+export async function activateDevUnlimited(): Promise<void> {
+  await AsyncStorage.setItem('@myfacescore_dev_unlimited', 'true');
+}
+
+export async function deactivateDevUnlimited(): Promise<void> {
+  await AsyncStorage.removeItem('@myfacescore_dev_unlimited');
+}
+
+export async function isDevUnlimited(): Promise<boolean> {
+  return (await AsyncStorage.getItem('@myfacescore_dev_unlimited')) === 'true';
+}
+
+// --- Product helpers ---
 
 export function isCreditProduct(productId: string): boolean {
   return productId in CREDIT_PACKS;

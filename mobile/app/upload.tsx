@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, ActivityIndicator, Alert, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, ActivityIndicator, Alert, Animated, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
 import { GradientButton } from '../components/GradientButton';
 import { colors, fonts, radius } from '../lib/theme';
-import { CONTEXTS, Context } from '../lib/constants';
+import { CONTEXTS, Context, PURPOSE_SUGGESTIONS } from '../lib/constants';
 import { analyzeImage } from '../lib/api';
 import { checkAccess, consumeAnalysis, getProStatus, getCredits, getRemainingFree } from '../lib/store';
 
@@ -31,6 +31,8 @@ export default function UploadScreen() {
   const [state, setState] = useState<UploadState>('context');
   const [context, setContext] = useState<Context | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [purpose, setPurpose] = useState<string>('');
+  const [expandedContext, setExpandedContext] = useState<Context | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusLabel, setStatusLabel] = useState('');
 
@@ -52,7 +54,12 @@ export default function UploadScreen() {
     })();
   }, [state]); // refresh when state changes (e.g. after analysis)
 
-  const handleContextSelect = (c: Context) => { setContext(c); setState('idle'); };
+  const handleContextSelect = (c: Context, selectedPurpose: string = '') => {
+    setContext(c);
+    setPurpose(selectedPurpose);
+    setExpandedContext(null);
+    setState('idle');
+  };
 
   const pickImage = async (useCamera: boolean) => {
     try {
@@ -90,7 +97,7 @@ export default function UploadScreen() {
     setState('uploading');
     setError(null);
     try {
-      const { id } = await analyzeImage(imageUri, context);
+      const { id } = await analyzeImage(imageUri, context, purpose);
       await consumeAnalysis();
       router.push({ pathname: '/processing', params: { id } });
     } catch (err: any) {
@@ -100,11 +107,12 @@ export default function UploadScreen() {
   };
 
   const handleReset = () => { setImageUri(null); setState('idle'); setError(null); };
+  const handleBackToContext = () => { setState('context'); setPurpose(''); setExpandedContext(null); };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
       <View style={styles.topBar}>
-        <Pressable onPress={() => state === 'context' ? router.back() : setState('context')}>
+        <Pressable onPress={() => state === 'context' ? router.back() : handleBackToContext()}>
           <Text style={styles.backButtonText}>← Back</Text>
         </Pressable>
         <Pressable onPress={() => router.push('/paywall')} style={styles.statusBadge}>
@@ -119,18 +127,44 @@ export default function UploadScreen() {
             <Text style={styles.subtitle}>Scoring is optimised per context.</Text>
             <View style={styles.contextList}>
               {CONTEXTS.map((c) => (
-                <Pressable key={c.id} onPress={() => handleContextSelect(c.id)}>
-                  <GlassCard style={styles.contextCard}>
-                    <View style={[styles.contextBadge, { backgroundColor: c.id === 'professional' ? '#4f46e5' : c.id === 'dating' ? '#e11d48' : '#06b6d4' }]}>
-                      <Text style={styles.contextBadgeText}>{c.emoji}</Text>
+                <View key={c.id}>
+                  <Pressable onPress={() => setExpandedContext(expandedContext === c.id ? null : c.id)}>
+                    <GlassCard style={[styles.contextCard, expandedContext === c.id && styles.contextCardExpanded]}>
+                      <View style={[styles.contextBadge, { backgroundColor: c.id === 'professional' ? '#4f46e5' : c.id === 'dating' ? '#e11d48' : '#06b6d4' }]}>
+                        <Text style={styles.contextBadgeText}>{c.emoji}</Text>
+                      </View>
+                      <View style={styles.contextInfo}>
+                        <Text style={styles.contextLabel}>{c.label}</Text>
+                        <Text style={styles.contextDesc}>{c.desc}</Text>
+                      </View>
+                      <Text style={styles.contextArrow}>{expandedContext === c.id ? '‹' : '›'}</Text>
+                    </GlassCard>
+                  </Pressable>
+                  {expandedContext === c.id && (
+                    <View style={styles.expandedContent}>
+                      <TextInput
+                        style={styles.purposeInput}
+                        placeholder="What do you want to know? e.g. &quot;How do others see me?&quot;"
+                        placeholderTextColor={colors.textMuted}
+                        value={purpose}
+                        onChangeText={setPurpose}
+                        multiline
+                      />
+                      <View style={styles.chipRow}>
+                        {PURPOSE_SUGGESTIONS[c.id].map((s) => (
+                          <Pressable key={s} onPress={() => handleContextSelect(c.id, s)}>
+                            <View style={styles.chip}>
+                              <Text style={styles.chipText}>{s}</Text>
+                            </View>
+                          </Pressable>
+                        ))}
+                      </View>
+                      <Pressable style={styles.continueButton} onPress={() => handleContextSelect(c.id, purpose)}>
+                        <Text style={styles.continueText}>Continue →</Text>
+                      </Pressable>
                     </View>
-                    <View style={styles.contextInfo}>
-                      <Text style={styles.contextLabel}>{c.label}</Text>
-                      <Text style={styles.contextDesc}>{c.desc}</Text>
-                    </View>
-                    <Text style={styles.contextArrow}>›</Text>
-                  </GlassCard>
-                </Pressable>
+                  )}
+                </View>
               ))}
             </View>
           </FadeInView>
@@ -138,8 +172,8 @@ export default function UploadScreen() {
 
         {state === 'idle' && (
           <FadeInView>
-            <Pressable onPress={() => setState('context')}>
-              <Text style={styles.changeContext}>← Change context · <Text style={styles.contextHighlight}>{context}</Text></Text>
+            <Pressable onPress={handleBackToContext}>
+              <Text style={styles.changeContext}>← Change context · <Text style={styles.contextHighlight}>{context}</Text>{purpose ? <Text style={styles.contextHighlight}> · {purpose}</Text> : null}</Text>
             </Pressable>
             <Text style={styles.title}>Upload your photo</Text>
             <Text style={styles.subtitle}>Clear, front-facing portrait · good lighting · one person</Text>
@@ -201,7 +235,15 @@ const styles = StyleSheet.create({
   contextInfo: { flex: 1 },
   contextLabel: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 16 },
   contextDesc: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 13, marginTop: 2 },
+  contextCardExpanded: { borderColor: colors.indigo[500] },
   contextArrow: { color: colors.textMuted, fontSize: 24 },
+  expandedContent: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { backgroundColor: 'rgba(99,102,241,0.12)', borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  chipText: { color: colors.indigo[300], fontFamily: fonts.medium, fontSize: 13 },
+  purposeInput: { backgroundColor: 'rgba(22,20,58,0.6)', borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 12, color: colors.white, fontFamily: fonts.regular, fontSize: 14, minHeight: 44 },
+  continueButton: { backgroundColor: colors.indigo[600], borderRadius: radius.md, paddingVertical: 12, alignItems: 'center' },
+  continueText: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 14 },
   changeContext: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 13, marginBottom: 16 },
   contextHighlight: { color: colors.indigo[300], textTransform: 'capitalize' },
   uploadCard: { padding: 32, alignItems: 'center', gap: 12 },

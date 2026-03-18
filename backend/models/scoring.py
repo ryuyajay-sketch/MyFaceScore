@@ -66,7 +66,7 @@ Do NOT sugarcoat. Be direct, blunt, and real. Users want to know exactly what's 
 Output ONLY valid JSON. No markdown. No commentary outside JSON."""
 
 PROMPT_TEMPLATE = """Context: {context} (optimize scoring weights for this use case)
-
+{purpose_line}
 Score this portrait. Return ONLY this JSON structure:
 {{
   "trustworthiness": {{
@@ -181,7 +181,7 @@ def _parse_dimension(raw: dict) -> DimensionResult:
     )
 
 
-async def score_face(image_bytes: bytes, context: Context = "professional") -> ScoringResult:
+async def score_face(image_bytes: bytes, context: Context = "professional", *, purpose: str = "") -> ScoringResult:
     """Send pre-processed face image to Claude Vision for Todorov-aligned scoring."""
     settings = get_settings()
     client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
@@ -202,7 +202,10 @@ async def score_face(image_bytes: bytes, context: Context = "professional") -> S
                     },
                     {
                         "type": "text",
-                        "text": PROMPT_TEMPLATE.format(context=context),
+                        "text": PROMPT_TEMPLATE.format(
+                            context=context,
+                            purpose_line=f"User's purpose: \"{purpose}\" — tailor your analysis and tips to this specific goal." if purpose else "",
+                        ),
                     },
                 ],
             }

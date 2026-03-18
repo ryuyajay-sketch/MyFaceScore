@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Animated, Image } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Animated, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
 import { GradientButton } from '../components/GradientButton';
 import { colors, fonts, radius } from '../lib/theme';
 import { DIMENSIONS } from '../lib/constants';
+import { activateDevUnlimited, isDevUnlimited } from '../lib/store';
 
 function FadeInView({ delay = 0, children, style }: { delay?: number; children: React.ReactNode; style?: any }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -54,6 +55,19 @@ function DemoBar({ dimension, index }: { dimension: typeof DIMENSIONS[number]; i
 export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoTap = async () => {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2000);
+    if (tapCount.current >= 7) {
+      tapCount.current = 0;
+      await activateDevUnlimited();
+      Alert.alert('Unlocked', 'Unlimited scans activated.');
+    }
+  };
 
   return (
     <ScrollView
@@ -62,7 +76,9 @@ export default function LandingScreen() {
       showsVerticalScrollIndicator={false}
     >
       <FadeInView delay={0} style={styles.nav}>
-        <Text style={styles.logo}>My<Text style={styles.logoAccent}>FaceScore</Text></Text>
+        <Pressable onPress={handleLogoTap}>
+          <Text style={styles.logo}>My<Text style={styles.logoAccent}>FaceScore</Text></Text>
+        </Pressable>
         <Pressable onPress={() => router.push('/upload')} style={styles.navButton}>
           <Text style={styles.navButtonText}>Try free →</Text>
         </Pressable>
@@ -125,7 +141,7 @@ export default function LandingScreen() {
       <FadeInView delay={800}>
         <GlassCard style={styles.credCard}>
           <Text style={styles.credQuote}>"People decide if they trust you before you even open your mouth."</Text>
-          <Text style={styles.credSource}>— Todorov et al., Princeton University</Text>
+          <Text style={styles.credSource}>— Social perception research</Text>
         </GlassCard>
       </FadeInView>
 

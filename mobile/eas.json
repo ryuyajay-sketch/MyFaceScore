@@ -14,5 +14,13 @@
     "production": {
       "autoIncrement": true
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6760623970",
+        "appleId": "ryuyajay@gmail.com"
+      }
+    }
   }
 }

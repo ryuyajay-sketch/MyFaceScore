@@ -7,7 +7,7 @@ import * as Sharing from 'expo-sharing';
 import { GlassCard } from '../../components/GlassCard';
 import { colors, fonts, radius } from '../../lib/theme';
 import { DIMENSION_CONFIG, CONTEXT_LABELS, percentileLabel, type Context } from '../../lib/constants';
-import { getResults, type ResultsResponse, type DimensionResult } from '../../lib/api';
+import { getResults, BASE_URL, type ResultsResponse, type DimensionResult } from '../../lib/api';
 
 const CATEGORY_LABELS: Record<string, string> = {
   expression: 'Expression', lighting: 'Lighting', pose: 'Pose', grooming: 'Grooming',
@@ -154,7 +154,7 @@ export default function ResultsScreen() {
             <View ref={cardRef} collapsable={false} style={styles.overallInner}>
               {data.image_url && (
                 <Image
-                  source={{ uri: `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}${data.image_url}` }}
+                  source={{ uri: `${BASE_URL}${data.image_url}` }}
                   style={styles.resultPhoto}
                 />
               )}
@@ -186,7 +186,7 @@ export default function ResultsScreen() {
           <GlassCard style={styles.disclaimer}>
             <Text style={styles.disclaimerText}>
               <Text style={styles.disclaimerBold}>Important: </Text>
-              These scores reflect how your photo may be perceived by others — not who you are as a person. First-impression judgments are automatic and can embed social biases. Based on research by Todorov et al. (2005–2008).
+              These scores reflect how your photo may be perceived by others — not who you are as a person. First-impression judgments are automatic and can embed social biases.
             </Text>
           </GlassCard>
         </FadeInView>

@@ -1,6 +1,6 @@
 import type { Context } from './constants';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://myfacescore-api-production.up.railway.app';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://myfacescore-api-production.up.railway.app';
 
 export interface AnalyzeResponse {
   id: string;
@@ -41,7 +41,7 @@ export interface ResultsResponse {
   created_at?: string;
 }
 
-export async function analyzeImage(uri: string, context: Context): Promise<AnalyzeResponse> {
+export async function analyzeImage(uri: string, context: Context, purpose?: string): Promise<AnalyzeResponse> {
   const formData = new FormData();
 
   const filename = uri.split('/').pop() || 'photo.jpg';
@@ -54,6 +54,7 @@ export async function analyzeImage(uri: string, context: Context): Promise<Analy
     type: mimeType,
   } as any);
   formData.append('context', context);
+  if (purpose) formData.append('purpose', purpose);
 
   const res = await fetch(`${BASE_URL}/analyze`, {
     method: 'POST',

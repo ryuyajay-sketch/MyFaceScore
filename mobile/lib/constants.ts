@@ -21,7 +21,7 @@ export const DIMENSION_CONFIG = [
     color: '#06b6d4',
     bgColor: 'rgba(6,182,212,0.08)',
     borderColor: 'rgba(6,182,212,0.2)',
-    research: 'Dominant axis in Todorov & Oosterhof (2008)',
+    research: 'The #1 trait people judge in the first 0.1 seconds',
   },
   {
     key: 'competence' as const,
@@ -30,7 +30,7 @@ export const DIMENSION_CONFIG = [
     color: '#6366f1',
     bgColor: 'rgba(99,102,241,0.08)',
     borderColor: 'rgba(99,102,241,0.2)',
-    research: 'Todorov et al. (2005) \u2014 predicts election outcomes',
+    research: 'Predicts how capable and confident you appear',
   },
   {
     key: 'approachability' as const,
@@ -39,7 +39,7 @@ export const DIMENSION_CONFIG = [
     color: '#22c55e',
     bgColor: 'rgba(34,197,94,0.08)',
     borderColor: 'rgba(34,197,94,0.2)',
-    research: 'Sutherland et al. (2013) \u2014 driven by expression cues',
+    research: 'Driven by expression, warmth, and body language cues',
   },
   {
     key: 'attractiveness' as const,
@@ -48,9 +48,15 @@ export const DIMENSION_CONFIG = [
     color: '#a855f7',
     bgColor: 'rgba(168,85,247,0.08)',
     borderColor: 'rgba(168,85,247,0.2)',
-    research: 'Secondary dimension in Todorov face evaluation model',
+    research: 'Symmetry, skin clarity, and photo quality',
   },
 ] as const;
+
+export const PURPOSE_SUGGESTIONS: Record<Context, string[]> = {
+  professional: ['LinkedIn profile photo', 'Job application headshot', 'How do I come across to coworkers?'],
+  dating: ['Dating app main photo', 'Do I look approachable?', 'First date first impression'],
+  social: ['How do others see me?', 'Profile pic check', 'Do I look trustworthy?'],
+};
 
 export const CONTEXT_LABELS: Record<Context, string> = {
   professional: 'Professional',
