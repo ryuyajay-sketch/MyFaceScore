@@ -48,6 +48,7 @@ const PRO_STATUS_KEY = '@myfacescore_pro';
 const PRO_PLAN_KEY = '@myfacescore_pro_plan';
 const PERIOD_COUNT_KEY = '@myfacescore_period_count';
 const PERIOD_START_KEY = '@myfacescore_period_start';
+const AI_CONSENT_KEY = '@myfacescore_ai_consent';
 
 const FREE_LIMIT = 2;
 const CHAT_COUNT_PREFIX = '@myfacescore_chat_';
@@ -116,6 +117,16 @@ export async function setProStatus(active: boolean, planId?: string): Promise<vo
     await AsyncStorage.setItem(PERIOD_COUNT_KEY, '0');
     await AsyncStorage.setItem(PERIOD_START_KEY, Date.now().toString());
   }
+}
+
+// --- AI Consent ---
+
+export async function hasAIConsent(): Promise<boolean> {
+  return (await AsyncStorage.getItem(AI_CONSENT_KEY)) === 'true';
+}
+
+export async function setAIConsent(): Promise<void> {
+  await AsyncStorage.setItem(AI_CONSENT_KEY, 'true');
 }
 
 // --- Pro rate limiting ---
@@ -196,6 +207,35 @@ export async function consumeAnalysis(): Promise<void> {
   } else if (reason === 'pro') {
     await incrementPeriodCount();
   }
+}
+
+// --- History ---
+
+const HISTORY_KEY = '@myfacescore_history';
+
+export interface HistoryEntry {
+  id: string;
+  context: string;
+  overall: number;
+  summary: string;
+  image_url?: string;
+  created_at: string;
+}
+
+export async function getHistory(): Promise<HistoryEntry[]> {
+  const raw = await AsyncStorage.getItem(HISTORY_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export async function addToHistory(entry: HistoryEntry): Promise<void> {
+  const history = await getHistory();
+  // Prepend new entry, keep max 50
+  const updated = [entry, ...history.filter(h => h.id !== entry.id)].slice(0, 50);
+  await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+}
+
+export async function clearHistory(): Promise<void> {
+  await AsyncStorage.removeItem(HISTORY_KEY);
 }
 
 // --- Store / IAP ---

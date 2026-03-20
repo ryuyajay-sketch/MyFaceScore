@@ -9,7 +9,7 @@ import { GradientButton } from '../components/GradientButton';
 import { colors, fonts, radius } from '../lib/theme';
 import { CONTEXTS, Context, PURPOSE_SUGGESTIONS } from '../lib/constants';
 import { analyzeImage } from '../lib/api';
-import { checkAccess, consumeAnalysis, getProStatus, getCredits, getRemainingFree } from '../lib/store';
+import { checkAccess, consumeAnalysis, getProStatus, getCredits, getRemainingFree, hasAIConsent, setAIConsent } from '../lib/store';
 
 type UploadState = 'context' | 'idle' | 'preview' | 'uploading';
 
@@ -83,6 +83,25 @@ export default function UploadScreen() {
 
   const handleAnalyze = async () => {
     if (!imageUri || !context) return;
+
+    const consented = await hasAIConsent();
+    if (!consented) {
+      Alert.alert(
+        'AI Photo Analysis',
+        'Your photo will be sent to Anthropic\'s Claude AI for analysis. Your photo is processed in real-time and deleted immediately — it is never stored.\n\nBy continuing, you agree to this data processing. See our Privacy Policy for details.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'I Agree',
+            onPress: async () => {
+              await setAIConsent();
+              handleAnalyze(); // retry after consent
+            }
+          },
+        ]
+      );
+      return;
+    }
 
     const { allowed, reason } = await checkAccess();
     if (!allowed) {

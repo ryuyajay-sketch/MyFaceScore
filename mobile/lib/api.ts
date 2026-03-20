@@ -103,3 +103,46 @@ export async function getResults(id: string): Promise<ResultsResponse> {
   }
   return res.json();
 }
+
+export interface ComparePhotoResult {
+  overall: number;
+  trustworthiness: number;
+  competence: number;
+  approachability: number;
+  attractiveness: number;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface CompareResponse {
+  winner: 'A' | 'B';
+  photo_a: ComparePhotoResult;
+  photo_b: ComparePhotoResult;
+  verdict: string;
+  context: string;
+}
+
+export async function compareImages(uriA: string, uriB: string, context: Context): Promise<CompareResponse> {
+  const formData = new FormData();
+
+  for (const [key, uri] of [['file_a', uriA], ['file_b', uriB]] as const) {
+    const filename = uri.split('/').pop() || 'photo.jpg';
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+    formData.append(key, { uri, name: filename, type: mimeType } as any);
+  }
+  formData.append('context', context);
+
+  const res = await fetch(`${BASE_URL}/compare`, {
+    method: 'POST',
+    body: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Comparison failed' }));
+    throw new Error(err.detail || `Compare failed: ${res.status}`);
+  }
+
+  return res.json();
+}

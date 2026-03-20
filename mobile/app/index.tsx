@@ -6,7 +6,7 @@ import { GlassCard } from '../components/GlassCard';
 import { GradientButton } from '../components/GradientButton';
 import { colors, fonts, radius } from '../lib/theme';
 import { DIMENSIONS } from '../lib/constants';
-import { activateDevUnlimited, isDevUnlimited } from '../lib/store';
+import { activateDevUnlimited, isDevUnlimited, getHistory } from '../lib/store';
 
 function FadeInView({ delay = 0, children, style }: { delay?: number; children: React.ReactNode; style?: any }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -79,9 +79,14 @@ export default function LandingScreen() {
         <Pressable onPress={handleLogoTap}>
           <Text style={styles.logo}>My<Text style={styles.logoAccent}>FaceScore</Text></Text>
         </Pressable>
-        <Pressable onPress={() => router.push('/upload')} style={styles.navButton}>
-          <Text style={styles.navButtonText}>Try free →</Text>
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable onPress={() => router.push('/history')} style={styles.navButtonOutline}>
+            <Text style={styles.navButtonOutlineText}>History</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/upload')} style={styles.navButton}>
+            <Text style={styles.navButtonText}>Try free →</Text>
+          </Pressable>
+        </View>
       </FadeInView>
 
       <View style={styles.hero}>
@@ -93,6 +98,9 @@ export default function LandingScreen() {
         </FadeInView>
         <FadeInView delay={400} style={styles.heroCTA}>
           <GradientButton title="Score my face" onPress={() => router.push('/upload')} />
+          <Pressable onPress={() => router.push('/compare')} style={styles.compareLink}>
+            <Text style={styles.compareLinkText}>Or compare two photos →</Text>
+          </Pressable>
         </FadeInView>
 
         <FadeInView delay={500}>
@@ -172,6 +180,8 @@ const styles = StyleSheet.create({
   logoAccent: { color: colors.indigo[400] },
   navButton: { backgroundColor: colors.indigo[600], paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.sm },
   navButtonText: { color: colors.white, fontFamily: fonts.medium, fontSize: 14 },
+  navButtonOutline: { borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.sm },
+  navButtonOutlineText: { color: colors.slate[400], fontFamily: fonts.medium, fontSize: 14 },
   hero: { alignItems: 'center', marginBottom: 32 },
   heroTitle: { color: colors.white, fontFamily: fonts.bold, fontSize: 40, lineHeight: 48, textAlign: 'center' },
   heroTitleGradient: { color: colors.indigo[400] },
@@ -207,5 +217,7 @@ const styles = StyleSheet.create({
   bulletRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bulletDot: { fontSize: 18, fontFamily: fonts.bold },
   bulletText: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 14 },
+  compareLink: { alignItems: 'center', paddingVertical: 10 },
+  compareLinkText: { color: colors.slate[500], fontFamily: fonts.regular, fontSize: 14, textDecorationLine: 'underline' },
   footer: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 11, textAlign: 'center', marginTop: 24, marginBottom: 8, lineHeight: 18 },
 });

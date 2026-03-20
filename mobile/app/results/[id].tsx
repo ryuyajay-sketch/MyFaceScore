@@ -8,7 +8,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { colors, fonts, radius } from '../../lib/theme';
 import { DIMENSION_CONFIG, CONTEXT_LABELS, percentileLabel, type Context } from '../../lib/constants';
 import { getResults, chatWithAI, BASE_URL, type ResultsResponse, type DimensionResult } from '../../lib/api';
-import { getChatCount, incrementChatCount, getChatLimit } from '../../lib/store';
+import { getChatCount, incrementChatCount, getChatLimit, addToHistory } from '../../lib/store';
 
 const CATEGORY_LABELS: Record<string, string> = {
   expression: 'Expression', lighting: 'Lighting', pose: 'Pose', grooming: 'Grooming',
@@ -112,7 +112,17 @@ export default function ResultsScreen() {
 
   useEffect(() => {
     if (!id) return;
-    getResults(id).then(setData).catch(e => setError(e.message)).finally(() => setLoading(false));
+    getResults(id).then((result) => {
+      setData(result);
+      addToHistory({
+        id: id!,
+        context: result.context,
+        overall: result.overall,
+        summary: result.summary,
+        image_url: result.image_url,
+        created_at: result.created_at || new Date().toISOString(),
+      });
+    }).catch(e => setError(e.message)).finally(() => setLoading(false));
     getChatCount(id).then(setChatCount);
     getChatLimit().then(setChatLimit);
   }, [id]);
