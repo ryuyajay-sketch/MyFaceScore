@@ -1,0 +1,46 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Submit the latest build for App Store review"
+  lane :submit_review do
+    api_key = app_store_connect_api_key(
+      key_id: "YBZR842N36",
+      issuer_id: "15b4ae6b-ae66-46b7-aa45-e709ef012c7e",
+      key_filepath: File.expand_path("AuthKey_YBZR842N36.p8", File.dirname(__FILE__)),
+    )
+
+    # Cancel any existing review submission first
+    begin
+      deliver(
+        api_key: api_key,
+        app_identifier: "com.firstimpressionai.app",
+        app_version: "1.0.0",
+        skip_metadata: true,
+        skip_screenshots: true,
+        skip_binary_upload: true,
+        force: true,
+        reject_if_possible: true,
+        submit_for_review: false,
+        precheck_include_in_app_purchases: false,
+      )
+    rescue => e
+      UI.message("Note: #{e.message}")
+    end
+
+    deliver(
+      api_key: api_key,
+      app_identifier: "com.firstimpressionai.app",
+      app_version: "1.0.0",
+      submit_for_review: true,
+      automatic_release: false,
+      skip_metadata: true,
+      skip_screenshots: true,
+      skip_binary_upload: true,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+      },
+    )
+  end
+end

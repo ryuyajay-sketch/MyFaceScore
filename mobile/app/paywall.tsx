@@ -140,7 +140,11 @@ export default function PaywallScreen() {
             {creditPacks.map((pack) => (
               <Pressable key={pack.id} onPress={() => setSelectedCredit(pack.id)} style={{ flex: 1 }}>
                 <GlassCard style={[styles.packCard, selectedCredit === pack.id && styles.packSelected]}>
-                  {pack.popular && <Text style={styles.popularBadge}>Most Popular</Text>}
+                  {pack.popular ? (
+                    <Text style={styles.popularBadge}>Most Popular</Text>
+                  ) : (
+                    <View style={styles.badgeSpacer} />
+                  )}
                   <Text style={styles.packScans}>{pack.scans}</Text>
                   <Text style={styles.packScansLabel}>scans</Text>
                   <Text style={styles.packPrice}>{pack.price}</Text>
@@ -221,7 +225,8 @@ const styles = StyleSheet.create({
   packs: { flexDirection: 'row', gap: 10, marginBottom: 24, justifyContent: 'center' },
   packCard: { width: '100%', padding: 16, alignItems: 'center', gap: 2 },
   packSelected: { borderColor: colors.indigo[500], borderWidth: 2 },
-  popularBadge: { color: colors.green[500], fontFamily: fonts.semiBold, fontSize: 10, marginBottom: 4 },
+  popularBadge: { color: colors.green[500], fontFamily: fonts.semiBold, fontSize: 10, height: 16, marginBottom: 4 },
+  badgeSpacer: { height: 16, marginBottom: 4 },
   packScans: { color: colors.white, fontFamily: fonts.bold, fontSize: 32 },
   packScansLabel: { color: colors.slate[400], fontFamily: fonts.regular, fontSize: 12 },
   packPrice: { color: colors.white, fontFamily: fonts.semiBold, fontSize: 18, marginTop: 8 },
