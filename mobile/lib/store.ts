@@ -36,7 +36,6 @@ const CREDIT_PRODUCT_IDS = [
 const SUB_PRODUCT_IDS = [
   'com.firstimpressionai.app.pro.weekly',
   'com.firstimpressionai.app.pro.monthly',
-  'com.firstimpressionai.app.pro.yearly',
 ];
 
 const ALL_PRODUCT_IDS = [...CREDIT_PRODUCT_IDS, ...SUB_PRODUCT_IDS];
@@ -64,7 +63,6 @@ const CREDIT_PACKS: Record<string, number> = {
 const PLAN_LIMITS: Record<string, { limit: number; periodDays: number }> = {
   'com.firstimpressionai.app.pro.weekly':  { limit: 30, periodDays: 7 },
   'com.firstimpressionai.app.pro.monthly': { limit: 100, periodDays: 30 },
-  'com.firstimpressionai.app.pro.yearly':  { limit: 50, periodDays: 1 }, // 50/day, resets daily
 };
 
 // --- Credits ---

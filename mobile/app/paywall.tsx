@@ -49,7 +49,6 @@ export default function PaywallScreen() {
   const [subPlans, setSubPlans] = useState<SubPlan[]>([
     { id: 'com.firstimpressionai.app.pro.weekly', label: 'Weekly', price: '$1.99', period: '/week', detail: '30 scans/week' },
     { id: 'com.firstimpressionai.app.pro.monthly', label: 'Monthly', price: '$4.99', period: '/month', detail: '100 scans/month' },
-    { id: 'com.firstimpressionai.app.pro.yearly', label: 'Yearly', price: '$19.99', period: '/year', detail: 'Unlimited scans · Best Value' },
   ]);
 
   useEffect(() => {
