@@ -58,6 +58,12 @@ export const PURPOSE_SUGGESTIONS: Record<Context, string[]> = {
   social: ['How do others see me?', 'Profile pic check', 'Do I look trustworthy?'],
 };
 
+export const CHAT_LIMITS: Record<string, number> = {
+  free: 2,
+  credits: 5,
+  pro: 999,
+};
+
 export const CONTEXT_LABELS: Record<Context, string> = {
   professional: 'Professional',
   dating: 'Dating',

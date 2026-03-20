@@ -50,6 +50,7 @@ const PERIOD_COUNT_KEY = '@myfacescore_period_count';
 const PERIOD_START_KEY = '@myfacescore_period_start';
 
 const FREE_LIMIT = 2;
+const CHAT_COUNT_PREFIX = '@myfacescore_chat_';
 
 // Credit packs: productId -> credits granted
 const CREDIT_PACKS: Record<string, number> = {
@@ -277,6 +278,32 @@ export async function restorePurchases(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// --- Chat limits ---
+
+export async function getChatCount(jobId: string): Promise<number> {
+  const val = await AsyncStorage.getItem(`${CHAT_COUNT_PREFIX}${jobId}`);
+  return val ? parseInt(val, 10) : 0;
+}
+
+export async function incrementChatCount(jobId: string): Promise<number> {
+  const count = await getChatCount(jobId) + 1;
+  await AsyncStorage.setItem(`${CHAT_COUNT_PREFIX}${jobId}`, count.toString());
+  return count;
+}
+
+export async function getChatLimit(): Promise<number> {
+  const devFlag = await AsyncStorage.getItem('@myfacescore_dev_unlimited');
+  if (devFlag === 'true') return 999;
+
+  const isPro = await getProStatus();
+  if (isPro) return 999;
+
+  const credits = await getCredits();
+  if (credits > 0) return 5;
+
+  return 2;
 }
 
 // --- Dev/owner unlimited ---

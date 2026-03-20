@@ -8,6 +8,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { colors, fonts, radius } from '../../lib/theme';
 import { DIMENSION_CONFIG, CONTEXT_LABELS, percentileLabel, type Context } from '../../lib/constants';
 import { getResults, chatWithAI, BASE_URL, type ResultsResponse, type DimensionResult } from '../../lib/api';
+import { getChatCount, incrementChatCount, getChatLimit } from '../../lib/store';
 
 const CATEGORY_LABELS: Record<string, string> = {
   expression: 'Expression', lighting: 'Lighting', pose: 'Pose', grooming: 'Grooming',
@@ -103,23 +104,30 @@ export default function ResultsScreen() {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatLimit, setChatLimit] = useState(2);
+  const [chatCount, setChatCount] = useState(0);
+  const chatLocked = chatCount >= chatLimit;
   const scrollRef = useRef<ScrollView>(null);
   const cardRef = useRef<View>(null);
 
   useEffect(() => {
     if (!id) return;
     getResults(id).then(setData).catch(e => setError(e.message)).finally(() => setLoading(false));
+    getChatCount(id).then(setChatCount);
+    getChatLimit().then(setChatLimit);
   }, [id]);
 
   const handleChat = async () => {
     const msg = chatInput.trim();
-    if (!msg || !id || chatLoading) return;
+    if (!msg || !id || chatLoading || chatLocked) return;
     setChatInput('');
     setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
     setChatLoading(true);
     try {
       const { reply } = await chatWithAI(id, msg);
       setChatMessages(prev => [...prev, { role: 'ai', text: reply }]);
+      const newCount = await incrementChatCount(id);
+      setChatCount(newCount);
     } catch {
       setChatMessages(prev => [...prev, { role: 'ai', text: 'Sorry, something went wrong. Try again.' }]);
     } finally {
@@ -228,21 +236,33 @@ export default function ResultsScreen() {
               </View>
             )}
 
-            <View style={styles.chatInputRow}>
-              <TextInput
-                style={styles.chatInput}
-                placeholder="e.g. How can I look more approachable?"
-                placeholderTextColor={colors.textMuted}
-                value={chatInput}
-                onChangeText={setChatInput}
-                onSubmitEditing={handleChat}
-                returnKeyType="send"
-                editable={!chatLoading}
-              />
-              <Pressable style={[styles.chatSend, chatLoading && styles.disabled]} onPress={handleChat} disabled={chatLoading}>
-                <Text style={styles.chatSendText}>→</Text>
+            {chatLocked ? (
+              <Pressable style={styles.chatPaywall} onPress={() => router.push('/paywall')}>
+                <Text style={styles.chatPaywallText}>Unlock unlimited AI chat</Text>
+                <Text style={styles.chatPaywallSub}>Upgrade to Pro or buy credits for more questions</Text>
               </Pressable>
-            </View>
+            ) : (
+              <>
+                {chatLimit < 999 && (
+                  <Text style={styles.chatRemaining}>{chatLimit - chatCount} message{chatLimit - chatCount !== 1 ? 's' : ''} remaining</Text>
+                )}
+                <View style={styles.chatInputRow}>
+                  <TextInput
+                    style={styles.chatInput}
+                    placeholder="e.g. How can I look more approachable?"
+                    placeholderTextColor={colors.textMuted}
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    onSubmitEditing={handleChat}
+                    returnKeyType="send"
+                    editable={!chatLoading}
+                  />
+                  <Pressable style={[styles.chatSend, chatLoading && styles.disabled]} onPress={handleChat} disabled={chatLoading}>
+                    <Text style={styles.chatSendText}>→</Text>
+                  </Pressable>
+                </View>
+              </>
+            )}
           </GlassCard>
         </FadeInView>
 
@@ -313,6 +333,10 @@ const styles = StyleSheet.create({
   chatBubbleAI: { alignSelf: 'flex-start', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)', borderRadius: radius.lg, borderBottomLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, maxWidth: '85%' },
   chatTextUser: { color: colors.white, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
   chatTextAI: { color: colors.slate[300], fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
+  chatRemaining: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 11, textAlign: 'right' },
+  chatPaywall: { backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)', borderRadius: radius.md, padding: 16, alignItems: 'center', gap: 4 },
+  chatPaywallText: { color: colors.indigo[300], fontFamily: fonts.semiBold, fontSize: 14 },
+  chatPaywallSub: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 12 },
   chatInputRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   chatInput: { flex: 1, backgroundColor: 'rgba(22,20,58,0.6)', borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10, color: colors.white, fontFamily: fonts.regular, fontSize: 14 },
   chatSend: { backgroundColor: colors.indigo[600], borderRadius: radius.md, width: 44, alignItems: 'center', justifyContent: 'center' },
