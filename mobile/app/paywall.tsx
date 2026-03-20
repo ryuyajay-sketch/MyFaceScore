@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Animated, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Animated, ScrollView, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -201,6 +201,22 @@ export default function PaywallScreen() {
             ? 'Credits never expire. One-time purchase, no subscription.'
             : 'Payment is charged to your Apple ID. Subscription auto-renews unless canceled at least 24 hours before the end of the current period. Manage in Settings.'}
         </Text>
+
+        <View style={styles.legalLinks}>
+          <Text
+            style={styles.legalLink}
+            onPress={() => Linking.openURL('https://ryuyajay-sketch.github.io/MyFaceScore/terms-of-use')}
+          >
+            Terms of Use
+          </Text>
+          <Text style={styles.legalSeparator}>·</Text>
+          <Text
+            style={styles.legalLink}
+            onPress={() => Linking.openURL('https://ryuyajay-sketch.github.io/MyFaceScore/privacy-policy')}
+          >
+            Privacy Policy
+          </Text>
+        </View>
       </ScrollView>
     </Animated.View>
   );
@@ -251,4 +267,8 @@ const styles = StyleSheet.create({
   restoreText: { color: colors.slate[500], fontFamily: fonts.regular, fontSize: 13 },
 
   legal: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 10, textAlign: 'center', lineHeight: 16, marginTop: 4 },
+
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 },
+  legalLink: { color: colors.indigo[300], fontFamily: fonts.regular, fontSize: 11, textDecorationLine: 'underline' },
+  legalSeparator: { color: colors.textDim, fontFamily: fonts.regular, fontSize: 11 },
 });

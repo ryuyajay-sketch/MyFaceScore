@@ -88,7 +88,7 @@ export default function UploadScreen() {
     if (!consented) {
       Alert.alert(
         'AI Photo Analysis',
-        'Your photo will be sent to Anthropic\'s Claude AI for analysis. Your photo is processed in real-time and deleted immediately — it is never stored.\n\nBy continuing, you agree to this data processing. See our Privacy Policy for details.',
+        'Your photo will be sent to Anthropic\'s Claude AI for analysis. The AI will generate subjective impressions — these are not scientific measurements or objective assessments.\n\nYour photo is processed in real-time and deleted immediately — it is never stored.\n\nBy continuing, you agree to this data processing. See our Privacy Policy for details.',
         [
           { text: 'Cancel', style: 'cancel' },
           {
@@ -143,7 +143,7 @@ export default function UploadScreen() {
         {state === 'context' && (
           <FadeInView>
             <Text style={styles.title}>What's this photo for?</Text>
-            <Text style={styles.subtitle}>Scoring is optimised per context.</Text>
+            <Text style={styles.subtitle}>Analysis is tailored per context.</Text>
             <View style={styles.contextList}>
               {CONTEXTS.map((c) => (
                 <View key={c.id}>

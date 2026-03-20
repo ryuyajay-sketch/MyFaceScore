@@ -94,10 +94,10 @@ export default function LandingScreen() {
           <Text style={styles.heroTitle}>You have{'\n'}<Text style={styles.heroTitleGradient}>0.1 seconds.</Text></Text>
         </FadeInView>
         <FadeInView delay={300}>
-          <Text style={styles.heroSubtitle}>That's how fast people judge your face. Find out what they're thinking — and what to fix.</Text>
+          <Text style={styles.heroSubtitle}>That's how fast people form an impression. See how an AI perceives you — and what you could change.</Text>
         </FadeInView>
         <FadeInView delay={400} style={styles.heroCTA}>
-          <GradientButton title="Score my face" onPress={() => router.push('/upload')} />
+          <GradientButton title="Get my impression" onPress={() => router.push('/upload')} />
           <Pressable onPress={() => router.push('/compare')} style={styles.compareLink}>
             <Text style={styles.compareLinkText}>Or compare two photos →</Text>
           </Pressable>
@@ -110,10 +110,10 @@ export default function LandingScreen() {
               <Image source={require('../assets/sample-face.png')} style={styles.mockAvatar} />
               <View style={styles.mockScoreSection}>
                 <Text style={styles.mockScore}>82</Text>
-                <Text style={styles.mockScoreLabel}>/100 · Top 25%</Text>
+                <Text style={styles.mockScoreLabel}>/100 · AI impression</Text>
               </View>
             </View>
-            <Text style={styles.mockQuote}>"Your smile reads genuine but the overhead lighting is casting shadows under your eyes — makes you look 3 years older than you are. Tilt your chin down slightly and use natural window light. That alone would push you from an 82 to a 90+."</Text>
+            <Text style={styles.mockQuote}>"Your smile reads genuine but the overhead lighting is casting shadows under your eyes. Tilting your chin down slightly and using natural window light could noticeably improve the AI's impression of your photo."</Text>
             <View style={styles.mockDivider} />
             {DIMENSIONS.map((d, i) => <DemoBar key={d.label} dimension={d} index={i} />)}
           </GlassCard>
@@ -134,13 +134,13 @@ export default function LandingScreen() {
         <FadeInView delay={700}>
           <View style={styles.stepRow}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
-            <Text style={styles.stepText}>AI scores you on trust, competence, approachability & attractiveness</Text>
+            <Text style={styles.stepText}>AI shares its impression of trust, competence, approachability & attractiveness</Text>
           </View>
         </FadeInView>
         <FadeInView delay={750}>
           <View style={styles.stepRow}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
-            <Text style={styles.stepText}>Get brutally honest feedback + tips to actually improve</Text>
+            <Text style={styles.stepText}>Get candid AI feedback + tips to improve your photo</Text>
           </View>
         </FadeInView>
       </View>
@@ -148,8 +148,8 @@ export default function LandingScreen() {
       {/* Social proof / credibility */}
       <FadeInView delay={800}>
         <GlassCard style={styles.credCard}>
-          <Text style={styles.credQuote}>"People decide if they trust you before you even open your mouth."</Text>
-          <Text style={styles.credSource}>— Social perception research</Text>
+          <Text style={styles.credQuote}>"First impressions happen in a blink — this AI gives you one perspective on how your photo might land."</Text>
+          <Text style={styles.credSource}>— AI-generated impression, not a scientific assessment</Text>
         </GlassCard>
       </FadeInView>
 
@@ -157,7 +157,7 @@ export default function LandingScreen() {
       <FadeInView delay={850}>
         <View style={styles.bulletSection}>
           <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#818cf8' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Results in 5 seconds</Text></View>
-          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#22c55e' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Based on real perception science</Text></View>
+          <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#22c55e' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Subjective AI impression, not a scientific measurement</Text></View>
           <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#06b6d4' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>Your photo is deleted immediately</Text></View>
           <View style={styles.bulletRow}><Text style={[styles.bulletDot, { color: '#a855f7' }]}>{'\u2022'}</Text><Text style={styles.bulletText}>No account needed</Text></View>
         </View>
@@ -167,7 +167,7 @@ export default function LandingScreen() {
         <GradientButton title="Try it free" onPress={() => router.push('/upload')} style={{ marginTop: 8 }} />
       </FadeInView>
 
-      <Text style={styles.footer}>2 free scans · no sign up · photo deleted after scoring</Text>
+      <Text style={styles.footer}>2 free analyses · no sign up · photo deleted after analysis</Text>
     </ScrollView>
   );
 }

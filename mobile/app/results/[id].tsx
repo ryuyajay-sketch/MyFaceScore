@@ -151,7 +151,7 @@ export default function ResultsScreen() {
     setSharing(true);
     try {
       const uri = await captureRef(cardRef, { format: 'png', quality: 1, result: 'tmpfile' });
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share your First Impression score' });
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share your AI impression' });
     } catch { Alert.alert('Share failed', 'Could not capture the results card.'); }
     finally { setSharing(false); }
   };
@@ -184,7 +184,7 @@ export default function ResultsScreen() {
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <FadeInView style={styles.header}>
           <Text style={styles.contextBadge}>Context: {CONTEXT_LABELS[data.context]}</Text>
-          <Text style={styles.headerTitle}>Your First Impression</Text>
+          <Text style={styles.headerTitle}>Your AI Impression</Text>
           <Text style={styles.headerSummary}>{data.summary}</Text>
         </FadeInView>
 
@@ -215,20 +215,20 @@ export default function ResultsScreen() {
           </GlassCard>
         </FadeInView>
 
+        <FadeInView delay={200}>
+          <GlassCard style={styles.disclaimer}>
+            <Text style={styles.disclaimerText}>
+              <Text style={styles.disclaimerBold}>Important: </Text>
+              These are AI-generated impressions based on your photo — not scientific measurements. They reflect how an AI interprets visual cues, not objective truth. Results are subjective and may not reflect how real people perceive you.
+            </Text>
+          </GlassCard>
+        </FadeInView>
+
         <View style={styles.dimensions}>
           {DIMENSION_CONFIG.map((config, i) => (
             <DimensionCard key={config.key} config={config} data={data[config.key]} index={i} />
           ))}
         </View>
-
-        <FadeInView delay={1000}>
-          <GlassCard style={styles.disclaimer}>
-            <Text style={styles.disclaimerText}>
-              <Text style={styles.disclaimerBold}>Important: </Text>
-              These scores reflect how your photo may be perceived by others — not who you are as a person. First-impression judgments are automatic and can embed social biases.
-            </Text>
-          </GlassCard>
-        </FadeInView>
 
         <FadeInView delay={1100}>
           <GlassCard style={styles.chatSection}>

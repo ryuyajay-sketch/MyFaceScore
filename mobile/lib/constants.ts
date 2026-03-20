@@ -21,7 +21,7 @@ export const DIMENSION_CONFIG = [
     color: '#06b6d4',
     bgColor: 'rgba(6,182,212,0.08)',
     borderColor: 'rgba(6,182,212,0.2)',
-    research: 'The #1 trait people judge in the first 0.1 seconds',
+    research: 'What the AI looks at: eye contact, brow tension, facial openness',
   },
   {
     key: 'competence' as const,
@@ -30,7 +30,7 @@ export const DIMENSION_CONFIG = [
     color: '#6366f1',
     bgColor: 'rgba(99,102,241,0.08)',
     borderColor: 'rgba(99,102,241,0.2)',
-    research: 'Predicts how capable and confident you appear',
+    research: 'What the AI looks at: posture cues, expression sharpness, composure',
   },
   {
     key: 'approachability' as const,
@@ -39,7 +39,7 @@ export const DIMENSION_CONFIG = [
     color: '#22c55e',
     bgColor: 'rgba(34,197,94,0.08)',
     borderColor: 'rgba(34,197,94,0.2)',
-    research: 'Driven by expression, warmth, and body language cues',
+    research: 'What the AI looks at: smile, warmth, and body language cues',
   },
   {
     key: 'attractiveness' as const,
@@ -48,7 +48,7 @@ export const DIMENSION_CONFIG = [
     color: '#a855f7',
     bgColor: 'rgba(168,85,247,0.08)',
     borderColor: 'rgba(168,85,247,0.2)',
-    research: 'Symmetry, skin clarity, and photo quality',
+    research: 'What the AI looks at: symmetry, skin clarity, and photo quality',
   },
 ] as const;
 
@@ -75,7 +75,7 @@ export const STEP_LABELS: Record<string, string> = {
   detecting: 'Detecting face landmarks\u2026',
   enhancing: 'Enhancing image quality\u2026',
   uploading: 'Preparing image\u2026',
-  scoring: 'AI is scoring your photo\u2026',
+  scoring: 'AI is analyzing your photo\u2026',
   finalizing: 'Generating your results\u2026',
 };
 
